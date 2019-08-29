@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -11,11 +12,16 @@ import (
 
 var AddContact = func(w http.ResponseWriter, r *http.Request) {
 
+	//logging request
+	body, _ := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	utils.Logging.Println(string(body))
+
 	user := r.Context().Value("user").(uint)
 
 	contact := &models.Contact{}
 
-	err := json.NewDecoder(r.Body).Decode(contact)
+	err := json.Unmarshal(body, contact)
 	if err != nil {
 		utils.Response(w, utils.Message(false, "Error decoding request body"))
 	}
@@ -23,14 +29,21 @@ var AddContact = func(w http.ResponseWriter, r *http.Request) {
 	log.Println("user id = ", user)
 	contact.UserId = user
 	res := contact.Create()
+
+	//logging response
+	resLog, _ := json.Marshal(res)
+	utils.Logging.Println(string(resLog))
 	utils.Response(w, res)
 }
 
 var GetContactsFor = func(w http.ResponseWriter, r *http.Request) {
 
+	utils.Logging.Println("GET all contact")
 	id := r.Context().Value("user").(uint)
 	data := models.GetAllContacts(id)
-	resp := utils.Message(true, "success")
-	resp["data"] = data
-	utils.Response(w, resp)
+	res := utils.Message(true, "success")
+	res["data"] = data
+	resLog, _ := json.Marshal(res)
+	utils.Logging.Println(string(resLog))
+	utils.Response(w, res)
 }

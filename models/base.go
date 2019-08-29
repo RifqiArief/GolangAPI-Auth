@@ -15,7 +15,7 @@ var db *gorm.DB //database
 func init() {
 
 	//loading .env file
-	err := godotenv.Load("database.env")
+	err := godotenv.Load("config/database.env")
 	if err != nil {
 		log.Println("models/base/line:19")
 		log.Fatal(err)
